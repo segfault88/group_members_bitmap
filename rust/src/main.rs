@@ -51,7 +51,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         count += 1;
 
-        let bitmap = bitmaps.entry(group_id).or_insert(RoaringBitmap::new());
+        let bitmap = bitmaps.entry(group_id).or_default();
         bitmap.insert(member_id);
     }
 
@@ -76,11 +76,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         let f = std::fs::OpenOptions::new()
             .write(true)
             .create(true)
+            .truncate(true)
             .open(&path);
 
         match f {
             Ok(mut file) => {
-                file.write(bytes.as_slice())?;
+                file.write_all(bytes.as_slice())?;
             }
             Err(err) => {
                 eprintln!("error opening output file: {} {}", path, err);
