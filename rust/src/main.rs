@@ -1,6 +1,6 @@
 use humanize_bytes::humanize_bytes_binary;
 use roaring::bitmap::RoaringBitmap;
-use std::collections::HashMap;
+use rustc_hash::FxHashMap;
 use std::error::Error;
 use std::fs::File;
 use std::io::Write;
@@ -10,7 +10,7 @@ use thousands::Separable;
 fn main() -> Result<(), Box<dyn Error>> {
     let start = Instant::now();
 
-    let mut bitmaps: HashMap<u32, RoaringBitmap> = HashMap::new();
+    let mut bitmaps: FxHashMap<u32, RoaringBitmap> = FxHashMap::default();
 
     let mut count: u32 = 0;
     let mut skipped: u32 = 0;
@@ -21,33 +21,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut reader = csv::Reader::from_reader(file);
     for result in reader.records() {
         let record = result?;
-        if record.len() != 2 {
-            eprintln!("invalid record count: {} value: {:?}", count, record);
+        if record.len() != 2 || record[0].is_empty() || record[1].is_empty() {
+            skipped += 1;
             continue;
         }
 
-        let group_id_str = &record[0];
-        let member_id_str = &record[1];
-
-        let group_id: u32 = match group_id_str.parse() {
-            Ok(group_id) => group_id,
-            Err(err) => {
-                skipped += 1;
-                _ = err;
-                // eprintln!("invalid group_id: {} count: {}", err, count);
-                continue;
-            }
-        };
-
-        let member_id: u32 = match member_id_str.parse() {
-            Ok(member_id) => member_id,
-            Err(err) => {
-                skipped += 1;
-                _ = err;
-                // eprintln!("invalid member_id: {} count: {}", err, count);
-                continue;
-            }
-        };
+        let group_id = record[0].parse::<u32>().unwrap();
+        let member_id = record[1].parse::<u32>().unwrap();
 
         count += 1;
 
