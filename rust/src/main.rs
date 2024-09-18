@@ -17,8 +17,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut reader = csv::ReaderBuilder::new().from_path("../group_members.csv")?;
     println!("input file opened");
-    for result in reader.records() {
-        let record = result?;
+    let mut record = csv::StringRecord::new();
+    while reader.read_record(&mut record)? {
         if record.len() != 2 || record[0].is_empty() || record[1].is_empty() {
             skipped += 1;
             continue;
