@@ -10,3 +10,6 @@ rustc-hash = "2"
 roaring = { version = "0.10.6", features = [] }
 thousands = "0.2.0"
 croaring = "2.0.3"
+
+[profile.release]
+debug = true
