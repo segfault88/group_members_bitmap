@@ -35,6 +35,7 @@ func main() {
 	bitmaps := map[int]*roaring.Bitmap{}
 
 	total := int64(0)
+	skipped := int64(0)
 
 	for {
 		record, err := reader.Read()
@@ -43,7 +44,8 @@ func main() {
 		}
 
 		if len(record) != 2 || record[0] == "" || record[1] == "" {
-			fmt.Printf("skipping bad record: %v\n", record)
+			// fmt.Printf("skipping bad record: %v\n", record)
+			skipped++
 			continue
 		}
 
@@ -85,5 +87,5 @@ func main() {
 		out.Close()
 	}
 
-	fmt.Printf("done, total: %s group members, total bytes: %s, took: %v\n", humanize.Comma(total), humanize.Bytes(totalSize), time.Since(start))
+	fmt.Printf("done, total: %s group members, skipped: %d, total bytes: %s, took: %v\n", humanize.Comma(total), skipped, humanize.Bytes(totalSize), time.Since(start))
 }
