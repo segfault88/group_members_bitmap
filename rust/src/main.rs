@@ -20,11 +20,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut reader = csv::Reader::from_reader(file);
     for result in reader.records() {
-        count += 1;
-        if count % 1000000 == 0 {
-            println!("count: {}", count.separate_with_commas());
-        }
-
         let record = result?;
         if record.len() != 2 {
             eprintln!("invalid record count: {} value: {:?}", count, record);
@@ -53,6 +48,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                 continue;
             }
         };
+
+        count += 1;
 
         let bitmap = bitmaps.entry(group_id).or_insert(RoaringBitmap::new());
         bitmap.insert(member_id);
