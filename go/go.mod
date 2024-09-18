@@ -1,6 +1,6 @@
 module github.com/segfault88/group_members_bitmap
 
-go 1.22.0
+go 1.23.1
 
 require (
 	github.com/RoaringBitmap/roaring v1.9.4 // indirect

@@ -1,8 +1,9 @@
+// use croaring::Bitmap;
 use humanize_bytes::humanize_bytes_binary;
 use roaring::bitmap::RoaringBitmap;
 use rustc_hash::FxHashMap;
+use std::collections::HashMap;
 use std::error::Error;
-use std::fs::File;
 use std::io::Write;
 use std::time::Instant;
 use thousands::Separable;
@@ -10,15 +11,13 @@ use thousands::Separable;
 fn main() -> Result<(), Box<dyn Error>> {
     let start = Instant::now();
 
-    let mut bitmaps: FxHashMap<u32, RoaringBitmap> = FxHashMap::default();
+    let mut bitmaps = FxHashMap::<u32, RoaringBitmap>::default();
 
     let mut count: u32 = 0;
     let mut skipped: u32 = 0;
 
-    let file = File::open("../group_members.csv")?;
+    let mut reader = csv::Reader::from_path("../group_members.csv")?;
     println!("input file opened");
-
-    let mut reader = csv::Reader::from_reader(file);
     for result in reader.records() {
         let record = result?;
         if record.len() != 2 || record[0].is_empty() || record[1].is_empty() {
@@ -40,6 +39,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     for (group_id, bitmap) in bitmaps.iter() {
         let mut bytes = vec![];
+        // let bytes = bitmap.serialize_into_vec::<croaring::Native>(&mut bytes);
         bitmap.serialize_into(&mut bytes)?;
 
         total_bytes += bytes.len();
@@ -48,6 +48,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             "group_id: {}, len: {:?}, size: {}",
             group_id,
             bitmap.len(),
+            // bitmap.cardinality(),
             humanize_bytes_binary!(bytes.len())
         );
 
@@ -60,9 +61,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             .open(&path);
 
         match f {
-            Ok(mut file) => {
-                file.write_all(bytes.as_slice())?;
-            }
+            Ok(mut file) => file.write_all(&bytes)?,
             Err(err) => {
                 eprintln!("error opening output file: {} {}", path, err);
             }
