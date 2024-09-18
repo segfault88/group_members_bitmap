@@ -1,12 +1,12 @@
-use std::fs::File;
 use roaring::bitmap::RoaringBitmap;
+use std::fs::File;
 use std::time::Instant;
 
 fn main() {
     let start = Instant::now();
 
     let mut bm = RoaringBitmap::new();
-    
+
     let mut count: u32 = 0;
     let mut skipped: u32 = 0;
 
@@ -16,7 +16,7 @@ fn main() {
 
             let mut reader = csv::Reader::from_reader(file);
             for result in reader.records() {
-                count+=1;
+                count += 1;
 
                 match result {
                     Ok(record) => {
@@ -31,8 +31,8 @@ fn main() {
                         let group_id: u32 = match group_id_str.parse::<u32>() {
                             Ok(group_id) => group_id,
                             Err(err) => {
-                                skipped+=1;
-                                _=err;
+                                skipped += 1;
+                                _ = err;
                                 // eprintln!("invalid group_id: {} count: {}", err, count);
                                 continue;
                             }
@@ -41,8 +41,8 @@ fn main() {
                         let member_id: u32 = match member_id_str.parse::<u32>() {
                             Ok(member_id) => member_id,
                             Err(err) => {
-                                skipped+=1;
-                                _=err;
+                                skipped += 1;
+                                _ = err;
                                 // eprintln!("invalid member_id: {} count: {}", err, count);
                                 continue;
                             }
@@ -64,5 +64,10 @@ fn main() {
         }
     }
 
-    println!("done in: {:?} skipped: {}, len: {:?}", Instant::now().duration_since(start),  skipped, bm.len());
+    println!(
+        "done in: {:?} skipped: {}, len: {:?}",
+        Instant::now().duration_since(start),
+        skipped,
+        bm.len()
+    );
 }
