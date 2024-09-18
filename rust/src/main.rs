@@ -34,7 +34,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let group_id_str = &record[0];
         let member_id_str = &record[1];
 
-        let group_id: u32 = match group_id_str.parse::<u32>() {
+        let group_id: u32 = match group_id_str.parse() {
             Ok(group_id) => group_id,
             Err(err) => {
                 skipped += 1;
@@ -44,7 +44,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
         };
 
-        let member_id: u32 = match member_id_str.parse::<u32>() {
+        let member_id: u32 = match member_id_str.parse() {
             Ok(member_id) => member_id,
             Err(err) => {
                 skipped += 1;
@@ -63,7 +63,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     for (group_id, bitmap) in bitmaps.iter() {
         let mut bytes = vec![];
-        bitmap.serialize_into(&mut bytes).unwrap();
+        bitmap.serialize_into(&mut bytes)?;
 
         total_bytes += bytes.len();
 
@@ -74,17 +74,19 @@ fn main() -> Result<(), Box<dyn Error>> {
             humanize_bytes_binary!(bytes.len())
         );
 
+        let path = format!("group_{}.roaring", group_id);
+
         let f = std::fs::OpenOptions::new()
             .write(true)
             .create(true)
-            .open(format!("group_{}.roaring", group_id));
+            .open(&path);
 
         match f {
             Ok(mut file) => {
                 file.write(bytes.as_slice())?;
             }
             Err(err) => {
-                eprintln!("error opening output file: {}", err);
+                eprintln!("error opening output file: {} {}", path, err);
             }
         }
     }
